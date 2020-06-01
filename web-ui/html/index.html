@@ -1,0 +1,20 @@
+<html>
+	<head>
+		<title>TK4 web UI</title>
+	</head>
+	<body>
+		<h1>Simple TK4- web ui</h1>
+		<hr />
+		<iframe src="/herc/cgi-bin/tasks/syslog" id="herc_syslog" height="570" width="640"></iframe>
+		<iframe src="/tn3270/" height="570" width="760"></iframe>
+
+	<script type="text/javascript">
+	function reloadSyslog() {
+		document.getElementById('herc_syslog').contentWindow.location.reload();
+		setTimeout(reloadSyslog, 5000);
+	}
+
+	setTimeout(reloadSyslog, 5000);
+	</script>
+	</body>
+</html>
