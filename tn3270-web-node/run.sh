@@ -8,5 +8,5 @@ fi
 
 while :
 do
-	shellinaboxd -s :root:root:HOME:"c3270 $TARGET_HOST" -v --css /shellinabox/shellinabox/white-on-black.css
+	shellinaboxd -s :root:root:HOME:"c3270 -secure $TARGET_HOST" -v --css /shellinabox/shellinabox/white-on-black.css
 done
