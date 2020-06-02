@@ -12,3 +12,6 @@ do
 	docker push $REPOSITORY/$container:arm64
 	docker push $REPOSITORY/$container:amd64
 done
+
+sed 's/__ARCH__/amd64/g' deployment/template.yaml > deployment/amd64.yaml
+sed 's/__ARCH__/arm64/g' deployment/template.yaml > deployment/arm64.yaml

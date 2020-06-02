@@ -6,7 +6,13 @@ This distribution includes a small web-based UI and a web-based TN3270 client ba
 
 ## Instructions
 
-    kubectl apply -f ./deployment.yaml
+for amd64:
+
+    kubectl apply -f deployment/amd64.yaml
+
+for arm64:
+
+    kubectl apply -f deployment/arm64.yaml
 
 ## Screenshots
 

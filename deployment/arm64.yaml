@@ -114,7 +114,7 @@ spec:
     spec:
       containers:
       - name: tk4-container
-        image: registry.qseco.fr/tk4-k8s/tk4-node
+        image: registry.qseco.fr/tk4-k8s/tk4-node:arm64
         imagePullPolicy: Always
         ports:
           - containerPort: 8038
@@ -150,7 +150,7 @@ spec:
     spec:
       containers:
       - name: tn3270-web-container
-        image: registry.qseco.fr/tk4-k8s/tn3270-web-node
+        image: registry.qseco.fr/tk4-k8s/tn3270-web-node:arm64
         imagePullPolicy: Always
         env:
         - name: TARGET_HOST
@@ -181,7 +181,7 @@ spec:
     spec:
       containers:
       - name: web-ui-container
-        image: registry.qseco.fr/tk4-k8s/web-ui
+        image: registry.qseco.fr/tk4-k8s/web-ui:arm64
         imagePullPolicy: Always
         env:
         - name: HERC_HOST

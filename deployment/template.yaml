@@ -1,0 +1,192 @@
+#
+# Service description for the tk4 tn3270 listener
+#
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tk4-tn3270
+spec:
+  selector:
+    app: tk4
+  ports:
+    - protocol: TCP
+      port: 3270
+      targetPort: 3270
+      name: tn3270
+  type: ClusterIP
+  
+#
+# Hercules Web UI LB
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: herc-web
+spec:
+  selector:
+    app: tk4
+  ports:
+    - protocol: TCP
+      port: 8038
+      targetPort: 8038
+      name: adminui
+  type: ClusterIP
+
+#
+# Service description for the tn3270 web UI
+#
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tn3270-web
+spec:
+  selector:
+    app: tn3270-web
+  ports:
+    - protocol: TCP
+      port: 4200
+      targetPort: 4200
+      name: tn3270web
+  type: ClusterIP
+  
+#
+# Service description for the nginx web frontend
+#
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-ui
+spec:
+  selector:
+    app: web-ui
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 80
+      name: webuiport
+  type: LoadBalancer
+
+#
+# Persistent volume to store the DASD 
+#
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: k8s-tk4
+  name: tk4-dasd-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+#
+# Actual tk4 deployment for k8s
+# 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tk4-node
+  labels:
+    app: tk4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tk4
+  template:
+    metadata:
+      labels:
+        app: tk4
+    spec:
+      containers:
+      - name: tk4-container
+        image: registry.qseco.fr/tk4-k8s/tk4-node:__ARCH__
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8038
+          - containerPort: 3270
+        volumeMounts:
+        - name: tk4-dasd
+          mountPath: /data
+      volumes:
+      - name: tk4-dasd
+        persistentVolumeClaim:
+          claimName: tk4-dasd-claim
+
+#
+# web-based tn3270 client
+# 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tn3270-web
+  labels:
+    app: tn3270-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tn3270-web
+  template:
+    metadata:
+      labels: 
+        app: tn3270-web
+    spec:
+      containers:
+      - name: tn3270-web-container
+        image: registry.qseco.fr/tk4-k8s/tn3270-web-node:__ARCH__
+        imagePullPolicy: Always
+        env:
+        - name: TARGET_HOST
+          value: "tk4-tn3270:3270"
+        ports:
+          - containerPort: 4200
+          
+#
+# web-ui 
+# 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-ui
+  labels:
+    app: web-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-ui
+  template:
+    metadata:
+      labels: 
+        app: web-ui
+    spec:
+      containers:
+      - name: web-ui-container
+        image: registry.qseco.fr/tk4-k8s/web-ui:__ARCH__
+        imagePullPolicy: Always
+        env:
+        - name: HERC_HOST
+          value: "herc-web"
+        - name: WEB3270_HOST
+          value: "tn3270-web"
+        ports:
+          - containerPort: 80
