@@ -33,7 +33,7 @@ spec:
       port: 8038
       targetPort: 8038
       name: adminui
-  type: LoadBalancer
+  type: ClusterIP
 
 #
 # Service description for the tn3270 web UI
@@ -43,7 +43,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tn3270-web-lb
+  name: tn3270-web
 spec:
   selector:
     app: tn3270-web
@@ -52,6 +52,25 @@ spec:
       port: 4200
       targetPort: 4200
       name: tn3270web
+  type: ClusterIP
+  
+#
+# Service description for the nginx web frontend
+#
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-ui
+spec:
+  selector:
+    app: web-ui
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 80
+      name: webuiport
   type: LoadBalancer
 
 #
@@ -138,3 +157,36 @@ spec:
           value: "tk4-tn3270:3270"
         ports:
           - containerPort: 4200
+          
+#
+# web-ui 
+# 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-ui
+  labels:
+    app: web-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-ui
+  template:
+    metadata:
+      labels: 
+        app: web-ui
+    spec:
+      containers:
+      - name: web-ui-container
+        image: registry.qseco.fr/tk4-k8s/web-ui
+        imagePullPolicy: Always
+        env:
+        - name: HERC_HOST
+          value: "herc-web"
+        - name: WEB3270_HOST
+          value: "tn3270-web"
+        ports:
+          - containerPort: 80
